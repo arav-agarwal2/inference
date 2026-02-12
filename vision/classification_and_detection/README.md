@@ -192,7 +192,7 @@ Support for other backends can be easily added.
 
 The following steps are **only** needed if you run the benchmark **without Docker**.
 
-Python 3.5, 3.6 or 3.7 is supported and we recommend to use Anaconda (See [Dockerfile](Dockerfile.cpu) for a minimal Anaconda install).
+Python 3.5+ is supported and we recommend to use Anaconda (See [Dockerfile](Dockerfile.cpu) for a minimal Anaconda install).
 
 Install the desired backend.
 For tensorflow:

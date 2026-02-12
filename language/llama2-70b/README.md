@@ -30,7 +30,7 @@ pip install transformers==4.31.0 nltk==3.8.1 evaluate==0.4.0 absl-py==1.4.0 roug
 export CUR_DIR=${PWD}
 cd <inference-repo-root>/loadgen
 
-# Need to fetch Pablo's changes
+# Fetch llm-server changes local to MLPerf.
 git fetch origin pull/1523/head:llm-server
 git merge llm-server
 
