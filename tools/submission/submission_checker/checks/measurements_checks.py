@@ -1,9 +1,11 @@
+import os
+import re
+
 from .base import BaseCheck
 from ..constants import *
 from ..loader import SubmissionLogs
 from ..configuration.configuration import Config
 from ..utils import *
-import os
 
 
 class MeasurementsCheck(BaseCheck):
@@ -61,6 +63,7 @@ class MeasurementsCheck(BaseCheck):
         self.checks.append(self.directory_exist_check)
         self.checks.append(self.required_files_check)
         self.checks.append(self.required_fields_check)
+        self.checks.append(self.userconf_vs_log_check)
 
     def missing_check(self):
         """Ensure a measurements JSON was provided.
@@ -137,3 +140,71 @@ class MeasurementsCheck(BaseCheck):
                 self.log.error(
                     "%s, field %s is missing meaningful value", self.path, k)
         return is_valid
+
+    def userconf_vs_log_check(self):
+        """Cross-check user.conf settings against mlperf_log_summary.txt.
+
+        Parses min_duration from user.conf and verifies it matches the
+        min_duration_ms reported in the performance run's summary log. A
+        mismatch means the submitted user.conf doesn't reflect how the
+        benchmark was actually run, which can misrepresent the submission.
+
+        Silently skips if either file is absent or unparseable.
+
+        Returns:
+            bool: True unless a numeric mismatch is detected, False if
+                min_duration in user.conf differs from min_duration_ms in
+                the performance log summary.
+        """
+        userconf_path = os.path.join(self.measurements_dir, "user.conf")
+        if not os.path.isfile(userconf_path):
+            return True
+
+        perf_path = self.submission_logs.loader_data.get("perf_path", "")
+        if not perf_path:
+            return True
+        summary_path = os.path.join(
+            os.path.dirname(perf_path), "mlperf_log_summary.txt"
+        )
+        if not os.path.isfile(summary_path):
+            return True
+
+        conf_vals = {}
+        try:
+            with open(userconf_path, encoding="utf-8", errors="replace") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    m = re.match(r"(?:\w+\.)?(\w+)\s*=\s*(.+)", line)
+                    if m:
+                        conf_vals[m.group(1)] = m.group(2).strip()
+        except OSError:
+            return True
+
+        summary_vals = {}
+        try:
+            with open(summary_path, encoding="utf-8", errors="replace") as f:
+                for line in f:
+                    m = re.match(r"\s*(\S+)\s*:\s*(.+)", line)
+                    if m:
+                        summary_vals[m.group(1)] = m.group(2).strip()
+        except OSError:
+            return True
+
+        conf_min_dur = conf_vals.get("min_duration")
+        log_min_dur = summary_vals.get("min_duration_ms")
+        if conf_min_dur is not None and log_min_dur is not None:
+            try:
+                if int(conf_min_dur) != int(log_min_dur):
+                    self.log.error(
+                        "%s user.conf min_duration=%s does not match "
+                        "mlperf_log_summary.txt min_duration_ms=%s",
+                        self.measurements_dir,
+                        conf_min_dur,
+                        log_min_dur,
+                    )
+                    return False
+            except ValueError:
+                pass
+        return True
