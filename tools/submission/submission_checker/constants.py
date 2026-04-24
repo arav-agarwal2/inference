@@ -1063,6 +1063,42 @@ MODEL_CONFIG = {
 
 VALID_DIVISIONS = ["open", "closed", "network"]
 VALID_AVAILABILITIES = ["available", "preview", "rdi"]
+
+CANONICAL_ACCELERATORS = {
+    # AMD
+    "AMD Instinct MI300X 192GB HBM3",
+    "AMD Instinct MI325X 256GB HBM3e",
+    "AMD Instinct MI350X 288GB HBM3e",
+    "AMD Instinct MI355X 288GB HBM3e",
+    "AMD Instinct MI355X 288GB HBM3e (Power Cap 1000 W)",
+    "AMD Instinct MI300X 192GB HBM3 (x8) and AMD Instinct MI325X 256GB HBM3e (x8) and AMD Instinct MI355X 288GB HBM3e (x8)",
+    # NVIDIA
+    "NVIDIA B200-SXM-180GB",
+    "NVIDIA B300-SXM-270GB",
+    "NVIDIA GB200",
+    "NVIDIA GB300",
+    "NVIDIA GB10",
+    "NVIDIA H200-NVL-141GB",
+    "NVIDIA H200-SXM-141GB",
+    "NVIDIA L40S",
+    "NVIDIA L4-PCIe-24GB",
+    "NVIDIA RTX PRO 4500 Blackwell",
+    "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce GTX 1650 Ti",
+    "NVIDIA Grace CPU",
+    "NVIDIA Jetson AGX Thor 128G",
+    "NVIDIA Jetson AGX Thor 64G",
+    # Intel
+    "Intel(R) Arc Pro(R) B50",
+    "Intel(R) Arc Pro(R) B60",
+    "Intel(R) Arc Pro(R) B70",
+    "MS-Intel Arc Pro B60 Dual 48G Turbo",
+    # ARM
+    "Cortex-X925",
+    # N/A placeholder (CPU-only submissions)
+    "N/A",
+}
 REQUIRED_PERF_FILES = ["mlperf_log_summary.txt", "mlperf_log_detail.txt"]
 OPTIONAL_PERF_FILES = ["mlperf_log_accuracy.json"]
 REQUIRED_PERF_POWER_FILES = ["spl.txt"]

@@ -1,3 +1,5 @@
+import re
+
 from .base import BaseCheck
 from ..constants import *
 from ..loader import SubmissionLogs
@@ -58,6 +60,7 @@ class SystemCheck(BaseCheck):
         self.checks.append(self.required_fields_check)
         self.checks.append(self.submitter_check)
         self.checks.append(self.division_check)
+        self.checks.append(self.accelerator_name_check)
 
     def missing_check(self):
         """Ensure the system JSON file was provided.
@@ -218,3 +221,28 @@ class SystemCheck(BaseCheck):
             )
             return False
         return True
+
+    def accelerator_name_check(self):
+        """Validate accelerator_model_name against the canonical allowlist.
+
+        Checks that the accelerator name exactly matches a known canonical
+        form. HBM3E/HBM3e capitalisation is normalised before matching.
+        Names that contain bare 'GB' not followed by a digit, or AMD/NVIDIA
+        names without a memory-capacity suffix, are flagged as errors even
+        if they are not in the allowlist.
+
+        Returns:
+            bool: True if the name is in the allowlist, False otherwise.
+        """
+        name = self.system_json.get("accelerator_model_name", "")
+        if not name:
+            return True
+        normalised = re.sub(r"\bHBM3E\b", "HBM3e", name)
+        if normalised in CANONICAL_ACCELERATORS:
+            return True
+        self.log.error(
+            "%s accelerator_model_name %r is not in the canonical allowlist",
+            self.path,
+            name,
+        )
+        return False
