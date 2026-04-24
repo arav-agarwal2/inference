@@ -90,10 +90,6 @@ class ComplianceCheck(BaseCheck):
             test_list.append("TEST09")
         if model in self.config.base.get("models_TEST08", []):
             test_list.append("TEST08")
-        if model in self.config.base.get("models_TEST07", []):
-            test_list.append("TEST07")
-        if model in self.config.base.get("models_TEST09", []):
-            test_list.append("TEST09")
         return test_list
 
     def dir_exists_check(self):
@@ -147,8 +143,26 @@ class ComplianceCheck(BaseCheck):
                     is_valid = False
                 if not os.path.exists(perf_path):
                     self.log.error(
-                        "Missing perfomance file in compliance dir. Needs file %s", perf_path)
+                        "Missing performance file in compliance dir. Needs file %s", perf_path)
                     is_valid = False
+            # TEST06 requires accuracy/mlperf_log_accuracy.json
+            if test == "TEST06":
+                acc_json_path = os.path.join(
+                    self.compliance_dir, test, "accuracy", "mlperf_log_accuracy.json")
+                if not os.path.exists(acc_json_path):
+                    self.log.error(
+                        "Missing accuracy log in compliance dir. Needs file %s", acc_json_path)
+                    is_valid = False
+            # TEST07 requires accuracy/accuracy.txt and accuracy/mlperf_log_accuracy.json
+            if test == "TEST07":
+                for acc_file in ["accuracy.txt", "mlperf_log_accuracy.json"]:
+                    acc_file_path = os.path.join(
+                        self.compliance_dir, test, "accuracy", acc_file)
+                    if not os.path.exists(acc_file_path):
+                        self.log.error(
+                            "Missing accuracy file in compliance dir. Needs file %s",
+                            acc_file_path)
+                        is_valid = False
             if test == "TEST09":
                 output_len_path = os.path.join(
                     self.compliance_dir, test, "verify_output_len.txt")
@@ -157,6 +171,15 @@ class ComplianceCheck(BaseCheck):
                         "Missing output length verification file in compliance dir. Needs file %s",
                         output_len_path)
                     is_valid = False
+                # TEST09 requires accuracy/accuracy.txt and accuracy/mlperf_log_accuracy.json
+                for acc_file in ["accuracy.txt", "mlperf_log_accuracy.json"]:
+                    acc_file_path = os.path.join(
+                        self.compliance_dir, test, "accuracy", acc_file)
+                    if not os.path.exists(acc_file_path):
+                        self.log.error(
+                            "Missing accuracy file in compliance dir. Needs file %s",
+                            acc_file_path)
+                        is_valid = False
         return is_valid
 
     def performance_check(self):
