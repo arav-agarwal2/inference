@@ -58,6 +58,7 @@ class ComplianceCheck(BaseCheck):
         Appends the per-submission validation callables to `self.checks` in
         the order they should be executed by the checking framework.
         """
+        self.checks.append(self.completeness_check)
         self.checks.append(self.dir_exists_check)
         self.checks.append(self.performance_check)
         self.checks.append(self.accuracy_check)
@@ -68,7 +69,8 @@ class ComplianceCheck(BaseCheck):
 
         The mapping of models to tests is read from the configuration
         (`self.config.base`) using the pre-defined keys
-        `models_TEST01`, `models_TEST04`, `models_TEST06`, and `models_TEST08`.
+        `models_TEST01`, `models_TEST04`, `models_TEST06`, `models_TEST07`,
+        `models_TEST08`, and `models_TEST09`. Each test appears at most once.
 
         Args:
             model (str): MLPerf benchmark/model identifier.
@@ -76,7 +78,6 @@ class ComplianceCheck(BaseCheck):
         Returns:
             list[str]: Ordered list of compliance test names to execute.
         """
-
         test_list = []
         if model in self.config.base.get("models_TEST01", []):
             test_list.append("TEST01")
@@ -86,15 +87,35 @@ class ComplianceCheck(BaseCheck):
             test_list.append("TEST06")
         if model in self.config.base.get("models_TEST07", []):
             test_list.append("TEST07")
-        if model in self.config.base.get("models_TEST09", []):
-            test_list.append("TEST09")
         if model in self.config.base.get("models_TEST08", []):
             test_list.append("TEST08")
-        if model in self.config.base.get("models_TEST07", []):
-            test_list.append("TEST07")
         if model in self.config.base.get("models_TEST09", []):
             test_list.append("TEST09")
         return test_list
+
+    def completeness_check(self):
+        """Warn when no compliance tests are expected for a closed submission.
+
+        If `test_list` is empty for a closed-division submission, the
+        benchmark is likely newly introduced and has not yet been added to
+        the appropriate `models_TEST*` list in the version config. Emits a
+        warning so reviewers can decide whether the omission is intentional.
+
+        Returns:
+            bool: Always True — this check only emits warnings, never errors,
+                to avoid blocking legitimate submissions for new benchmarks.
+        """
+        if self.division.lower() == "open":
+            return True
+        if not self.test_list:
+            self.log.warning(
+                "%s: no compliance tests found for benchmark %r in closed "
+                "division — verify that models_TEST* lists are up to date "
+                "for this version",
+                self.path,
+                self.model,
+            )
+        return True
 
     def dir_exists_check(self):
         """Verify required compliance directories and files exist.
