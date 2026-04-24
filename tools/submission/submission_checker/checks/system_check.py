@@ -3,6 +3,7 @@ from ..constants import *
 from ..loader import SubmissionLogs
 from ..configuration.configuration import Config
 from ..utils import *
+import re
 
 
 class SystemCheck(BaseCheck):
@@ -58,6 +59,7 @@ class SystemCheck(BaseCheck):
         self.checks.append(self.required_fields_check)
         self.checks.append(self.submitter_check)
         self.checks.append(self.division_check)
+        self.checks.append(self.cpu_name_check)
 
     def missing_check(self):
         """Ensure the system JSON file was provided.
@@ -217,4 +219,44 @@ class SystemCheck(BaseCheck):
                 self.division,
             )
             return False
+        return True
+
+    def cpu_name_check(self):
+        """Validate host_processor_model_name is canonical.
+
+        Checks the CPU name against a known-good allowlist and rejects
+        names that end with OS-sourced suffixes like '-Core Processor' or
+        ' CPU @', which indicate the raw /proc/cpuinfo string was used
+        verbatim instead of the canonical MLPerf hardware name.
+
+        Names in the allowlist are accepted without further inspection.
+        Names not in the allowlist that also carry a bad suffix are
+        rejected as errors; names not in the allowlist but without a bad
+        suffix emit a warning for human review.
+
+        Returns:
+            bool: True if the name passes all checks, False if it carries
+                a known bad suffix.
+        """
+        name = self.system_json.get("host_processor_model_name", "")
+        if not name:
+            return True
+        if name in CANONICAL_CPUS:
+            return True
+        for suffix in BAD_CPU_SUFFIXES:
+            if name.endswith(suffix) or suffix in name:
+                self.log.error(
+                    "%s host_processor_model_name %r contains OS-sourced suffix %r "
+                    "— use the canonical model name without OS-appended text",
+                    self.path,
+                    name,
+                    suffix,
+                )
+                return False
+        self.log.warning(
+            "%s host_processor_model_name %r is not in the canonical CPU list "
+            "— verify the name matches official MLPerf hardware documentation",
+            self.path,
+            name,
+        )
         return True

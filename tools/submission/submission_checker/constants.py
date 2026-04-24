@@ -1063,6 +1063,48 @@ MODEL_CONFIG = {
 
 VALID_DIVISIONS = ["open", "closed", "network"]
 VALID_AVAILABILITIES = ["available", "preview", "rdi"]
+
+CANONICAL_CPUS = {
+    # AMD EPYC
+    "AMD EPYC 8434P", "AMD EPYC 8534P",
+    "AMD EPYC 9475F", "AMD EPYC 9534", "AMD EPYC 9535",
+    "AMD EPYC 9575F", "AMD EPYC 9597F",
+    "AMD EPYC 9655", "AMD EPYC 9755", "AMD EPYC 9845", "AMD EPYC 9965",
+    "AMD EPYC 9A75",
+    # AMD Ryzen
+    "AMD Ryzen 5 4600H",
+    # Intel Xeon (Sapphire / Emerald / Granite Rapids)
+    "Intel(R) Xeon(R) Platinum 8470",
+    "Intel(R) Xeon(R) Platinum 8480C",
+    "Intel(R) Xeon(R) Platinum 8562Y+",
+    "Intel(R) Xeon(R) Platinum 8570",
+    "Intel(R) Xeon(R) Platinum 8580",
+    "Intel(R) Xeon(R) w7-2495X",
+    "Intel(R) Xeon(R) 6747P",
+    "Intel(R) Xeon(R) 6767P",
+    "Intel(R) Xeon(R) 6776P",
+    "Intel(R) Xeon(R) 6787P",
+    "Intel(R) Xeon(R) 6979P",
+    "Intel(R) Xeon(R) 6980P",
+    "Intel(R) Xeon(R) 698X",
+    # Intel Xeon (generic/alias forms used by some submitters)
+    "Intel Xeon Processor (Sapphire Rapids)",
+    "Intel Xeon Processor (SapphireRapids)",
+    # Intel Core
+    "13th Gen Intel(R) Core(TM) i9-13900K",
+    "Intel(R) Core(TM) Ultra 7 255H [GPU]",
+    # NVIDIA Grace / ARM
+    "NVIDIA Grace CPU",
+    "Cortex-X925",
+    # Multi-CPU node descriptions (AMD heterogeneous systems)
+    "AMD EPYC 9534 (on MI300X node), AMD EPYC 9655 (on MI325X node), AMD EPYC 9965 (on MI355X node)",
+}
+
+BAD_CPU_SUFFIXES = (
+    "-Core Processor",
+    " CPU @",
+)
+
 REQUIRED_PERF_FILES = ["mlperf_log_summary.txt", "mlperf_log_detail.txt"]
 OPTIONAL_PERF_FILES = ["mlperf_log_accuracy.json"]
 REQUIRED_PERF_POWER_FILES = ["spl.txt"]
