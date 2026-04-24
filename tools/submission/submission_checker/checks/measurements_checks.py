@@ -79,14 +79,38 @@ class MeasurementsCheck(BaseCheck):
     def directory_exist_check(self):
         """Verify the expected source directory exists in the submission.
 
+        For v6.0 submissions the required name is 'src'. When the directory
+        is absent, looks for common misspellings ('source code', 'source',
+        etc.) in the same parent and emits a targeted error message to help
+        submitters understand the naming requirement.
+
         Returns:
             bool: True if `src_dir` exists, False otherwise.
         """
         if not os.path.exists(self.src_dir):
-            self.log.error(
-                "%s src directory does not exist",
-                self.src_dir
+            src_parent = os.path.dirname(self.src_dir)
+            _COMMON_MISSPELLINGS = (
+                "source code", "source_code", "Source", "source",
+                "CODE", "code",
             )
+            alt = next(
+                (name for name in _COMMON_MISSPELLINGS
+                 if os.path.isdir(os.path.join(src_parent, name))),
+                None,
+            )
+            if alt:
+                self.log.error(
+                    "%s src directory missing; found %r instead — "
+                    "rename to %r as required by the submission rules",
+                    src_parent,
+                    alt,
+                    os.path.basename(self.src_dir),
+                )
+            else:
+                self.log.error(
+                    "%s src directory does not exist",
+                    self.src_dir,
+                )
             return False
         return True
 
