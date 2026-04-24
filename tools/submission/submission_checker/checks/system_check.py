@@ -176,8 +176,10 @@ class SystemCheck(BaseCheck):
                 and k in SYSTEM_DESC_NUMERIC_RESPONSE_REQUIRED_FIELDS
                 and not is_number(str(self.system_json[k]))
             ):
+                is_valid = False
                 self.log.error(
-                    "%s, field %s requires a numeric response but is empty", self.path, k
+                    "%s, field %s requires a numeric value, got %r",
+                    self.path, k, self.system_json[k],
                 )
         return is_valid
 

@@ -1497,7 +1497,10 @@ SYSTEM_DESC_MEANINGFUL_RESPONSE_REQUIRED_FIELDS = [
 ]
 
 SYSTEM_DESC_NUMERIC_RESPONSE_REQUIRED_FIELDS = [
-    # "network_speed_mbit"
+    "number_of_nodes",
+    "accelerators_per_node",
+    "host_processor_core_count",
+    "host_processors_per_node",
 ]
 
 
