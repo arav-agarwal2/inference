@@ -58,6 +58,7 @@ class SystemCheck(BaseCheck):
         self.checks.append(self.required_fields_check)
         self.checks.append(self.submitter_check)
         self.checks.append(self.division_check)
+        self.checks.append(self.system_name_consistency_check)
 
     def missing_check(self):
         """Ensure the system JSON file was provided.
@@ -215,6 +216,34 @@ class SystemCheck(BaseCheck):
                 self.path,
                 self.system_json.get("division"),
                 self.division,
+            )
+            return False
+        return True
+
+    def system_name_consistency_check(self):
+        """Validate system_name matches the systems JSON filename.
+
+        The loader derives the system identifier from the JSON filename
+        (without extension). If the 'system_name' field inside the JSON
+        differs from that filename the system description is inconsistent
+        with the results and measurements directory names, which reference
+        the same identifier.
+
+        Returns:
+            bool: True if system_name matches the directory-derived name,
+                False otherwise.
+        """
+        system_name_in_json = self.system_json.get("system_name", "")
+        system_dir_name = self.submission_logs.loader_data.get("system", "")
+        if not system_dir_name:
+            return True
+        if system_name_in_json != system_dir_name:
+            self.log.error(
+                "%s system_name %r does not match the systems JSON "
+                "filename / result directory name %r",
+                self.path,
+                system_name_in_json,
+                system_dir_name,
             )
             return False
         return True
