@@ -58,6 +58,7 @@ class SystemCheck(BaseCheck):
         self.checks.append(self.required_fields_check)
         self.checks.append(self.submitter_check)
         self.checks.append(self.division_check)
+        self.checks.append(self.string_fields_check)
 
     def missing_check(self):
         """Ensure the system JSON file was provided.
@@ -218,3 +219,34 @@ class SystemCheck(BaseCheck):
             )
             return False
         return True
+
+    def string_fields_check(self):
+        """Validate that string-typed system fields are not JSON objects.
+
+        Some fields (e.g. other_software_stack, host_network_card_count) must
+        be plain strings. Submitters occasionally supply a nested JSON object
+        instead, which breaks downstream tooling that parses these fields as
+        free-form text.
+
+        Returns:
+            bool: True if all checked fields contain string values (or are
+                absent), False if any contain a non-string type.
+        """
+        string_only_fields = [
+            "other_software_stack",
+            "host_network_card_count",
+            "framework",
+        ]
+        is_valid = True
+        for field in string_only_fields:
+            value = self.system_json.get(field)
+            if value is not None and not isinstance(value, str):
+                self.log.error(
+                    "%s, field %s must be a string but got %s: %r",
+                    self.path,
+                    field,
+                    type(value).__name__,
+                    value,
+                )
+                is_valid = False
+        return is_valid
